@@ -46,7 +46,22 @@ def match_frame(dets: list, gts: list, iou_thr: float) -> list:
     if that IoU is at least iou_thr; then that object is used up. Returns a
     list of (score, is_tp) in the same order as dets.
     """
-    raise NotImplementedError('GP2 Task 3: match_frame')
+    used = [False] * len(gts)
+    is_tp = [False] * len(dets)
+    # Stable sort, so equal scores keep their order (as pycocotools does).
+    order = sorted(range(len(dets)), key=lambda i: -dets[i]['score'])
+    for i in order:
+        d = dets[i]
+        best, best_j = iou_thr, -1
+        for j, g in enumerate(gts):
+            if used[j] or g['cls'] != d['cls']:
+                continue
+            o = iou(d['box'], g['box'])
+            if o >= best:
+                best, best_j = o, j
+        if best_j >= 0:
+            is_tp[i] = True
+    return [(d['score'], tp) for d, tp in zip(dets, is_tp)]
 
 
 def pr_curve(scored: list, n_gt: int):
@@ -56,7 +71,15 @@ def pr_curve(scored: list, n_gt: int):
     of equal length. With no ground truth, recall is undefined: return two
     empty arrays.
     """
-    raise NotImplementedError('GP2 Task 3: pr_curve')
+    if n_gt == 0:
+        return np.array([]), np.array([])
+    scored = sorted(scored, key=lambda s: -s[0])          # stable, highest first
+    tp = np.array([is_tp for _, is_tp in scored], dtype=float)
+    tp_sum = np.cumsum(tp)
+    fp_sum = np.cumsum(1.0 - tp)
+    precision = tp_sum / np.maximum(tp_sum + fp_sum, 1.0)
+    recall = tp_sum / n_gt
+    return precision, recall
 
 
 def average_precision(precision: np.ndarray, recall: np.ndarray) -> float:
@@ -65,7 +88,13 @@ def average_precision(precision: np.ndarray, recall: np.ndarray) -> float:
     At each recall level r in 0, 0.01, ..., 1.00, take the best precision
     reached at any recall >= r (0 if none), and average the 101 values.
     """
-    raise NotImplementedError('GP2 Task 3: average_precision')
+    precision = np.asarray(precision, dtype=float)
+    recall = np.asarray(recall, dtype=float)
+    values = []
+    for r in np.linspace(0, 1, 101):
+        reached = precision[recall >= r]
+        values.append(reached.max() if reached.size else 0.0)
+    return float(np.mean(values))
 
 
 def mean_ap(frames: list, iou_thresholds=IOU_THRESHOLDS,
@@ -76,4 +105,24 @@ def mean_ap(frames: list, iou_thresholds=IOU_THRESHOLDS,
     truth anywhere is left out of the mean. Returns
     {'ap': {cls: {thr: AP}}, 'map50': float, 'map50_95': float}.
     """
-    raise NotImplementedError('GP2 Task 3: mean_ap')
+    ap = {}
+    for c in classes:
+        n_gt = sum(1 for _, gts in frames for g in gts if g['cls'] == c)
+        if n_gt == 0:
+            continue
+        ap[c] = {}
+        for thr in iou_thresholds:
+            scored = []
+            for dets, gts in frames:
+                d_c = [d for d in dets if d['cls'] == c]
+                g_c = [g for g in gts if g['cls'] == c]
+                # Pool each frame highest score first, as pycocotools does,
+                # so equal scores across frames break ties the same way.
+                scored += sorted(match_frame(d_c, g_c, thr), key=lambda s: -s[0])
+            p, r = pr_curve(scored, n_gt)
+            ap[c][float(thr)] = average_precision(p, r)
+    if not ap:
+        return {'ap': {}, 'map50': 0.0, 'map50_95': 0.0}
+    per_thr = [np.mean([ap[c][float(t)] for c in ap]) for t in iou_thresholds]
+    return {'ap': ap, 'map50': float(per_thr[0]),
+            'map50_95': float(np.mean(per_thr))}
