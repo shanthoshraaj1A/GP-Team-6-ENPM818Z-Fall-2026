@@ -1,87 +1,80 @@
-# GP1_Team1
+# GP---Team-1-ENPM818Z-Fall-2026
 
-We have used the sensor's configurations for `Team A` in the [sensor configuration table](https://enpm818z-fall-2026-docs.readthedocs.io/en/latest/assignments/gp1.html#your-team-s-sensor-configuration) on the course website.
+## GP2: YOLOv8s vs RT-DETR-L
 
-## GP1 Breakdown of Work
+For GP2 I compared two camera detectors, YOLOv8s and RT-DETR-L, on Team 1's two CARLA drives (one clear, one at night). Everything for GP2 is on the `gp2` branch, and my report is `gp2_report.pdf` at the top of the repo.
 
-Task 1: Zachary Steinberg
+What I added to `ads_pipeline`:
+- Task 1: ground-truth boxes straight from CARLA (`gt_boxes.py`)
+- Task 2: a ROS 2 detector node that publishes on `/perception/detections` (`detector_core.py`, `detector_node.py`)
+- Task 3: code that grades the detectors and gives AP and mAP (`detection_eval.py`)
+- Task 4: an image tracker that follows each object from frame to frame (`box_tracker.py`)
 
-Task 2 + 4 Sensors: 
-- RGB Camera: Shanthosh Raaj Mohanram Mageswari
-- Depth Camera: Shanthosh Raaj Mohanram Mageswari
-- Semantic Segmentation: Shanthosh Raaj Mohanram Mageswari
-- LiDAR: Zachary Steinberg
-- RADAR: Zachary Steinberg
-- GNSS: Rey Roque
-- IMU: Rey Roque
+For each task, the branch history first has a commit with a typical mistake, then a commit that fixes it, so you can see what goes wrong and why.
 
-Task 3: Rey Roque + Zachary Steinberg
+## GP2 Breakdown of Work
 
-Task 5: Rey Roque
+I did all of GP2 myself: Tasks 1 to 5, including the report.
 
-## ROSBag Data
-
-Here's a link to our rosbag data in google drive: https://drive.google.com/file/d/1OHQEkZoIJnb5oD_6412dWOU5JZmfaJiN/view?usp=drive_link
-
-## AI Disclosure
-
-### Zachary Steinberg
-
-I did not use AI for any of the tasks I worked on. With Rey, I used github copilot to add logs and troubleshoot the `analyze_rosbag.py` script before running it to analyze the rosbag data.
-
-### Rey Roque
-
-I used ChatGPT to help with boilerplate code for task 5, specifically to: get parameters from the carla_config.yaml fil and spawn the vehicle and sensors. Used it to write the script to read in the rosbag and calculate the mean gap between stamps from the message timestamps for task 3: 'analize_rosbag.py'.
+## GP2 AI Disclosure
 
 ### Shanthosh Raaj Mohanram Mageswari
 
-I used an AI assistant (Claude Code) to help write the camera code and to test it in CARLA without the visualization. (Copied/Pasted by Zach and Rey from Shanthosh's [PR Disclosure](https://github.com/zstein13/GP1_Team1/pull/10). He wasn't available when putting together the final submission)
+I used Claude Code to assist with identifying and correcting errors in the code for Tasks 1 to 4, as well as running the build, tests, timing measurements, and grading within my Docker container. Additionally, it helped me create the overlay and node images.
 
-## How to run GP1
+## GP2 Results
 
-### Setup the repository
+The results and analysis are in `gp2_report.pdf`, and the raw outputs are in `results/gp2/`.
 
-Clone the `GP1_Team1` repo and switch to the `gp1` branch:
+## How to run GP2
 
-```
-gh repo clone zstein13/GP1_Team1
-git checkout gp1
-```
-
-### Start Carla
-
-Using the commands provided in the course website, run the following to start carla:
+Clone the repo into the `src/` folder of your ROS 2 workspace, switch to the `gp2` branch, and install the Python packages that don't come with ROS 2:
 
 ```
-carla_basic
+git clone git@github.com:shanthoshraaj1A/GP---Team-1-ENPM818Z-Fall-2026.git
+git checkout gp2
+python3 -m pip install --user --break-system-packages ultralytics pycocotools scipy
 ```
 
-### Build and run ads_pipeline
+The drives are too big for GitHub, so they aren't in the repo. Get `team_1_drives.tar` from Canvas and unpack it so you end up with `ads_pipeline/recordings/clear/` and `ads_pipeline/recordings/night/` (600 frames each).
 
-Use the following command to build `ads_pipeline`:
+Build from the workspace root, then go into the package folder. All the commands after this are run from `ads_pipeline/`:
 
 ```
 colcon build --packages-up-to ads_pipeline
+source install/setup.bash
+cd src/GP---Team-1-ENPM818Z-Fall-2026/ads_pipeline
+python3 -m pytest test/ -k gp2
 ```
 
-The commands below should be run after the Carla server has started:
-
-Use the following command to run the `ads_pipeline` `sensor_launch.py` executable:
+To draw the ground truth on frames 50, 300 and 550 of each drive (Task 1):
 
 ```
-ros2 launch ads_pipeline sensors_launch.py
+python3 tools/show_frame.py --rec recordings/clear --frames 50 300 550 --out ../results/gp2/overlays
+python3 tools/show_frame.py --rec recordings/night --frames 50 300 550 --out ../results/gp2/overlays
 ```
 
-Use the following command to run the `ads_pipeline` `record_launch.py` executable that records the `rosbag` and enables autopilot:
+To run both detectors on both drives and time them (Task 2). Close CARLA first, otherwise the times are way off:
 
 ```
-ros2 launch ads_pipeline record_launch.py
+python3 tools/run_detector.py --rec recordings/clear --model yolo --weights yolov8s.pt
+python3 tools/run_detector.py --rec recordings/clear --model detr --weights rtdetr-l.pt
+python3 tools/run_detector.py --rec recordings/night --model yolo --weights yolov8s.pt
+python3 tools/run_detector.py --rec recordings/night --model detr --weights rtdetr-l.pt
 ```
 
-### How to execute test_projections.py
-
-To run the `test_projections.py` script, the carla-server must be running. After the carla-server is running, execute the following command:
+To run the detector node live, open three terminals. The first starts the node (use `model_type:=yolo weights:=yolov8s.pt` for YOLOv8s), the second plays the night drive as a camera, and the third checks that detections come out at about 20 Hz:
 
 ```
-python3 ads_pipeline/scripts/test_projections.py
+ros2 launch ads_pipeline perception_launch.py model_type:=detr weights:=rtdetr-l.pt
+python3 tools/replay_drive.py --rec recordings/night
+ros2 topic hz /perception/detections
+```
+
+To check my mAP against pycocotools and to grade both drives with the tracker (Tasks 3 and 4). Run `check_coco.py` with `--model yolo` and `--model detr` on both drives:
+
+```
+python3 tools/check_coco.py --rec recordings/clear --model yolo
+python3 tools/grade.py --rec recordings/clear --conf 0.5
+python3 tools/grade.py --rec recordings/night --conf 0.5
 ```
