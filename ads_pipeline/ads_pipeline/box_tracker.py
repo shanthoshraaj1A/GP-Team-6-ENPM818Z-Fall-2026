@@ -126,7 +126,8 @@ def associate(cost: np.ndarray, max_cost: float = 1.0 - MIN_IOU):
     matches = []
     if n_t and n_d:
         rows, cols = linear_sum_assignment(cost)
-        matches = [(int(r), int(c)) for r, c in zip(rows, cols)]
+        matches = [(int(r), int(c)) for r, c in zip(rows, cols)
+                   if cost[r, c] <= max_cost]
     matched_t = {t for t, _ in matches}
     matched_d = {d for _, d in matches}
     unmatched_tracks = [t for t in range(n_t) if t not in matched_t]
