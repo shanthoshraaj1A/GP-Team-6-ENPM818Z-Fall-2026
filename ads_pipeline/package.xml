@@ -30,6 +30,11 @@
        them rather than reimplementing them; see README. -->
   <exec_depend>l2_carla_demo</exec_depend>
 
+  <!-- GP2: the detector node and the image tracker. -->
+  <exec_depend>vision_msgs</exec_depend>
+  <exec_depend>cv_bridge</exec_depend>
+  <exec_depend>python3-scipy</exec_depend>
+
   <test_depend>python3-pytest</test_depend>
 
   <export>

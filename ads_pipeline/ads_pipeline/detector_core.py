@@ -28,7 +28,14 @@ NMS_IOU = 0.7
 def load_model(model_type: str, weights: str, device: str = 'cuda'):
     """An Ultralytics model: 'yolo' -> YOLO(weights), 'detr' -> RTDETR(weights).
     Raise ValueError for any other model_type."""
-    raise NotImplementedError('GP2 Task 2: load_model')
+    if model_type not in ('yolo', 'detr'):
+        raise ValueError(f"model_type must be 'yolo' or 'detr', not {model_type!r}")
+    # Imported here so the rest of the package (and the ValueError above)
+    # works without Ultralytics installed.
+    from ultralytics import RTDETR, YOLO
+    model = YOLO(weights) if model_type == 'yolo' else RTDETR(weights)
+    model.to(device)
+    return model
 
 
 def predict(model, bgr, conf: float = CONF, device: str = 'cuda') -> list:
@@ -39,4 +46,19 @@ def predict(model, bgr, conf: float = CONF, device: str = 'cuda') -> list:
     [{'box': [x1, y1, x2, y2], 'score': float, 'cls': 'vehicle' or
     'pedestrian'}] in pixels of the original image.
     """
-    raise NotImplementedError('GP2 Task 2: predict')
+    # Ultralytics takes a NumPy image as BGR, and scales its boxes back to
+    # the original image size. RT-DETR has no NMS; it ignores iou.
+    result = model.predict(bgr, imgsz=IMGSZ, conf=conf, iou=NMS_IOU,
+                           device=device, verbose=False)[0]
+    boxes = result.boxes
+    xyxy = boxes.xyxy.cpu().numpy()
+    scores = boxes.conf.cpu().numpy()
+    classes = boxes.cls.cpu().numpy().astype(int)
+    dets = []
+    for box, score, c in zip(xyxy, scores, classes):
+        name = result.names[int(c)]
+        if name not in COCO_TO_GP2:            # traffic light, bench, ...
+            continue
+        dets.append({'box': [float(v) for v in box], 'score': float(score),
+                     'cls': COCO_TO_GP2[name]})
+    return dets
