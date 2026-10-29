@@ -123,7 +123,18 @@ def project_points(points_world: np.ndarray, T_opt_world: np.ndarray,
     each point's depth along the optical axis, in meters. Points behind the
     camera have z <= 0; their uv is meaningless, but still return a row.
     """
-    raise NotImplementedError('GP2 Task 1: project_points')
+    pts = np.asarray(points_world, dtype=np.float64).reshape(-1, 3)
+    homogeneous = np.hstack([pts, np.ones((pts.shape[0], 1))]).T    # 4 x N
+    in_optical = (np.asarray(T_opt_world) @ homogeneous)[:3, :]      # 3 x N
+    z = in_optical[2, :]
+
+    # Unlike GP1's projection, nothing is dropped here: the caller decides
+    # what to do with points behind the camera (clip_near). Dividing by a
+    # zero depth would give inf, so guard it; those rows are meaningless.
+    safe_z = np.where(np.abs(z) < 1e-9, 1e-9, z)
+    projected = np.asarray(K) @ in_optical
+    uv = (projected[:2, :] / safe_z).T                               # N x 2
+    return uv, z
 
 
 def box_from_corners(uv: np.ndarray, z: np.ndarray, width: int, height: int):
@@ -134,7 +145,21 @@ def box_from_corners(uv: np.ndarray, z: np.ndarray, width: int, height: int):
     allow 1e-6 m for rounding, since clip_near puts points exactly on it), the box lies entirely outside the image, or the
     clipped box is narrower or shorter than MIN_BOX_PX.
     """
-    raise NotImplementedError('GP2 Task 1: box_from_corners')
+    if len(z) == 0 or np.any(np.asarray(z) < Z_NEAR - 1e-6):
+        return None
+    uv = np.asarray(uv, dtype=np.float64)
+    x1, y1 = uv.min(axis=0)
+    x2, y2 = uv.max(axis=0)
+
+    # Entirely off the image: nothing to clip back in.
+    if x2 < 0 or y2 < 0 or x1 > width - 1 or y1 > height - 1:
+        return None
+
+    x1, x2 = np.clip([x1, x2], 0, width - 1)
+    y1, y2 = np.clip([y1, y2], 0, height - 1)
+    if x2 - x1 < MIN_BOX_PX or y2 - y1 < MIN_BOX_PX:
+        return None
+    return [float(x1), float(y1), float(x2), float(y2)]
 
 
 def actor_pixels(box, z_corners: np.ndarray, depth: np.ndarray,
@@ -149,7 +174,28 @@ def actor_pixels(box, z_corners: np.ndarray, depth: np.ndarray,
          on each side. Nearer means something is in front (occluded);
          farther means another object of the same class behind it.
     """
-    raise NotImplementedError('GP2 Task 1: actor_pixels')
+    h, w = depth.shape
+    mask = np.zeros((h, w), dtype=bool)
+
+    # 1. The pixels whose centre lies inside the box (inclusive on both ends).
+    x1, y1, x2, y2 = box
+    c1, c2 = max(int(np.ceil(x1)), 0), min(int(np.floor(x2)), w - 1)
+    r1, r2 = max(int(np.ceil(y1)), 0), min(int(np.floor(y2)), h - 1)
+    if c1 > c2 or r1 > r2:
+        return mask
+    d = depth[r1:r2 + 1, c1:c2 + 1]
+    s = semantic[r1:r2 + 1, c1:c2 + 1]
+
+    # 2. The actor's class.
+    is_class = np.isin(s, tags)
+
+    # 3. The actor's own depth range, widened by DEPTH_MARGIN_M.
+    z_near = float(np.min(z_corners)) - DEPTH_MARGIN_M
+    z_far = float(np.max(z_corners)) + DEPTH_MARGIN_M
+    in_range = (d >= z_near) & (d <= z_far)
+
+    mask[r1:r2 + 1, c1:c2 + 1] = is_class & in_range
+    return mask
 
 
 # ---------------------------------------------------------------------------

@@ -54,3 +54,7 @@ qtcreator-*
 
 # Catkin custom files
 CATKIN_IGNORE
+
+# GP2: team drives and model weights (never commit)
+recordings/
+*.pt
