@@ -39,8 +39,8 @@ def to_detection_array(dets: list, header) -> Detection2DArray:
         det = Detection2D()
         det.header = header
         det.bbox = BoundingBox2D()
-        det.bbox.center.position.x = x1
-        det.bbox.center.position.y = y1
+        det.bbox.center.position.x = (x1 + x2) / 2.0
+        det.bbox.center.position.y = (y1 + y2) / 2.0
         det.bbox.size_x = x2 - x1
         det.bbox.size_y = y2 - y1
         hyp = ObjectHypothesisWithPose()
