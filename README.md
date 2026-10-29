@@ -1,6 +1,6 @@
 # GP---Team-1-ENPM818Z-Fall-2026
 
-## GP2: YOLOv8s vs RT-DETR-L
+## GP2: YOLOv8s vs RT-DETR
 
 For GP2 I compared two camera detectors, YOLOv8s and RT-DETR-L, on Team 1's two CARLA drives (one clear, one at night). Everything for GP2 is on the `gp2` branch, and my report is `gp2_report.pdf` at the top of the repo.
 
