@@ -34,6 +34,7 @@ setup(
             'radar_node = ads_pipeline.radar_node:main',
             'gnss_node = ads_pipeline.gnss_node:main',
             'imu_node = ads_pipeline.imu_node:main',
+            'detector_node = ads_pipeline.detector_node:main',
         ],
     },
 )

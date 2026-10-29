@@ -32,7 +32,23 @@ def to_detection_array(dets: list, header) -> Detection2DArray:
     hypothesis whose class_id is 'vehicle' or 'pedestrian' and whose score
     is the detection's score. Every Detection2D also carries the header.
     """
-    raise NotImplementedError('GP2 Task 2: to_detection_array')
+    msg = Detection2DArray()
+    msg.header = header
+    for d in dets:
+        x1, y1, x2, y2 = (float(v) for v in d['box'])
+        det = Detection2D()
+        det.header = header
+        det.bbox = BoundingBox2D()
+        det.bbox.center.position.x = x1
+        det.bbox.center.position.y = y1
+        det.bbox.size_x = x2 - x1
+        det.bbox.size_y = y2 - y1
+        hyp = ObjectHypothesisWithPose()
+        hyp.hypothesis.class_id = d['cls']
+        hyp.hypothesis.score = float(d['score'])
+        det.results.append(hyp)
+        msg.detections.append(det)
+    return msg
 
 
 # ---------------------------------------------------------------------------
