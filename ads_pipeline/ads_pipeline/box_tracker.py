@@ -54,17 +54,38 @@ class BoxKalman:
 
     def __init__(self, box):
         """Start at box: set x, P and the matrices F, H, Q and R."""
-        raise NotImplementedError('GP2 Task 4: BoxKalman.__init__')
+        I4 = np.eye(4)
+        # Constant velocity, dt = 1 frame: each value gains its speed.
+        self.F = np.eye(8)
+        self.F[:4, 4:] = I4
+        # The detector measures the box itself: z = [cx, cy, w, h] = H x.
+        self.H = np.hstack([I4, np.zeros((4, 4))])
+        r_var = np.array([4.0, 4.0, 8.0, 8.0]) ** 2
+        self.R = np.diag(r_var)
+        # Random acceleration, as in L5: Q = G diag(q) G^T, G = [0.5 I; I].
+        G = np.vstack([0.5 * I4, I4])
+        q_var = np.array([2.0, 2.0, 1.0, 1.0]) ** 2
+        self.Q = G @ np.diag(q_var) @ G.T
+
+        self.x = np.concatenate([box_to_z(box), np.zeros(4)])
+        self.P = np.diag(np.concatenate([r_var, np.full(4, 100.0 ** 2)]))
 
     def predict(self):
         """One frame ahead: x and P. Keep w and h at least 1 px. Returns
         the predicted box."""
-        raise NotImplementedError('GP2 Task 4: BoxKalman.predict')
+        self.x = self.F @ self.x
+        self.P = self.F @ self.P @ self.F.T + self.Q
+        self.x[2:4] = np.maximum(self.x[2:4], 1.0)
+        return self.box
 
     def update(self, box):
         """Correct x and P with a matched detection's box, with L3's
         update: K = P H^T S^-1, x = x + K y, P = (I - K H) P."""
-        raise NotImplementedError('GP2 Task 4: BoxKalman.update')
+        y = box_to_z(box) - self.H @ self.x
+        S = self.H @ self.P @ self.H.T + self.R
+        K = self.P @ self.H.T @ np.linalg.inv(S)
+        self.x = self.x + K @ y
+        self.P = (np.eye(8) - K @ self.H) @ self.P
 
     @property
     def box(self):
@@ -90,14 +111,27 @@ class Track:
 # ---------------------------------------------------------------------------
 def iou_cost(track_boxes: list, det_boxes: list) -> np.ndarray:
     """Cost matrix, tracks x detections: 1 - IoU."""
-    raise NotImplementedError('GP2 Task 4: iou_cost')
+    C = np.ones((len(track_boxes), len(det_boxes)))
+    for i, tb in enumerate(track_boxes):
+        for j, db in enumerate(det_boxes):
+            C[i, j] = 1.0 - iou(tb, db)
+    return C
 
 
 def associate(cost: np.ndarray, max_cost: float = 1.0 - MIN_IOU):
     """Hungarian assignment (scipy's linear_sum_assignment), then drop any
     pair whose cost exceeds max_cost. Returns (matches, unmatched_tracks,
     unmatched_dets): matches is a list of (track_index, det_index)."""
-    raise NotImplementedError('GP2 Task 4: associate')
+    n_t, n_d = cost.shape
+    matches = []
+    if n_t and n_d:
+        rows, cols = linear_sum_assignment(cost)
+        matches = [(int(r), int(c)) for r, c in zip(rows, cols)]
+    matched_t = {t for t, _ in matches}
+    matched_d = {d for _, d in matches}
+    unmatched_tracks = [t for t in range(n_t) if t not in matched_t]
+    unmatched_dets = [d for d in range(n_d) if d not in matched_d]
+    return matches, unmatched_tracks, unmatched_dets
 
 
 class BoxTracker:
@@ -118,7 +152,38 @@ class BoxTracker:
         4. Unmatched track: misses += 1; delete after MAX_MISSES.
         5. Unmatched detection: start a tentative track.
         """
-        raise NotImplementedError('GP2 Task 4: BoxTracker.step')
+        for t in self.tracks:
+            t.kf.predict()
+
+        matched_now = set()
+        new_tracks = []
+        for cls in sorted({t.cls for t in self.tracks} | {d['cls'] for d in dets}):
+            tracks = [t for t in self.tracks if t.cls == cls]
+            cls_dets = [d for d in dets if d['cls'] == cls]
+            C = iou_cost([t.kf.box for t in tracks], [d['box'] for d in cls_dets])
+            matches, um_tracks, um_dets = associate(C)
+
+            for ti, di in matches:
+                t = tracks[ti]
+                t.kf.update(cls_dets[di]['box'])
+                t.hits += 1
+                t.misses = 0
+                if t.hits >= CONFIRM_HITS:
+                    t.confirmed = True
+                matched_now.add(t.track_id)
+            for ti in um_tracks:
+                tracks[ti].misses += 1
+            for di in um_dets:
+                new_tracks.append(Track(self.next_id, cls,
+                                        BoxKalman(cls_dets[di]['box'])))
+                self.next_id += 1
+
+        self.tracks = [t for t in self.tracks if t.misses < MAX_MISSES] + new_tracks
+        # Report only the confirmed tracks a detection backed in this frame;
+        # a coasting track is kept for re-matching but not reported.
+        return [{'track_id': t.track_id, 'cls': t.cls,
+                 'box': [float(v) for v in t.kf.box]}
+                for t in self.tracks if t.confirmed and t.track_id in matched_now]
 
 
 # ---------------------------------------------------------------------------
