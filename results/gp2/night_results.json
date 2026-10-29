@@ -1,0 +1,53 @@
+{
+  "frames": 600,
+  "gt_counts": {
+    "vehicle": 985,
+    "pedestrian": 325
+  },
+  "models": {
+    "detr": {
+      "map50": 0.7600712629167017,
+      "map50_95": 0.5803861383163351,
+      "ap50": {
+        "vehicle": 0.7332729575026801,
+        "pedestrian": 0.7868695683307234
+      },
+      "ms_per_image_median": 34.72890499688219,
+      "tracker_conf": 0.5,
+      "tracking": {
+        "id_switches": 28,
+        "matched": 732,
+        "missed": 578,
+        "false_tracks": 92,
+        "gt": 1310,
+        "mota": 0.4671755725190839
+      }
+    },
+    "yolo": {
+      "map50": 0.7465493914271908,
+      "map50_95": 0.5432710165200805,
+      "ap50": {
+        "vehicle": 0.6735511226451019,
+        "pedestrian": 0.8195476602092798
+      },
+      "ms_per_image_median": 8.561025504604913,
+      "tracker_conf": 0.5,
+      "tracking": {
+        "id_switches": 9,
+        "matched": 542,
+        "missed": 768,
+        "false_tracks": 2,
+        "gt": 1310,
+        "mota": 0.4053435114503817
+      }
+    }
+  },
+  "truth_tracking": {
+    "id_switches": 3,
+    "matched": 1215,
+    "missed": 95,
+    "false_tracks": 0,
+    "gt": 1310,
+    "mota": 0.9251908396946564
+  }
+}
