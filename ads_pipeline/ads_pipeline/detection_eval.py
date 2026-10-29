@@ -60,6 +60,7 @@ def match_frame(dets: list, gts: list, iou_thr: float) -> list:
             if o >= best:
                 best, best_j = o, j
         if best_j >= 0:
+            used[best_j] = True
             is_tp[i] = True
     return [(d['score'], tp) for d, tp in zip(dets, is_tp)]
 

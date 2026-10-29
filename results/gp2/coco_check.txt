@@ -1,0 +1,4 @@
+clear yolo: pycocotools mAP@0.5 0.7426, mAP@0.5:0.95 0.5640 | yours mAP@0.5 0.7426, mAP@0.5:0.95 0.5640 | difference +0.0000, +0.0000
+clear detr: pycocotools mAP@0.5 0.8206, mAP@0.5:0.95 0.6362 | yours mAP@0.5 0.8206, mAP@0.5:0.95 0.6362 | difference +0.0000, +0.0000
+night yolo: pycocotools mAP@0.5 0.7465, mAP@0.5:0.95 0.5433 | yours mAP@0.5 0.7465, mAP@0.5:0.95 0.5433 | difference +0.0000, +0.0000
+night detr: pycocotools mAP@0.5 0.7601, mAP@0.5:0.95 0.5804 | yours mAP@0.5 0.7601, mAP@0.5:0.95 0.5804 | difference +0.0000, +0.0000
