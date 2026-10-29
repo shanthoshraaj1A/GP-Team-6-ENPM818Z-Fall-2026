@@ -128,9 +128,10 @@ def project_points(points_world: np.ndarray, T_opt_world: np.ndarray,
     in_optical = (np.asarray(T_opt_world) @ homogeneous)[:3, :]      # 3 x N
     z = in_optical[2, :]
 
-    # Unlike GP1's projection, nothing is dropped here: the caller decides
-    # what to do with points behind the camera (clip_near). Dividing by a
-    # zero depth would give inf, so guard it; those rows are meaningless.
+    # Keep every point, even behind the camera (GP1 dropped those): the
+    # caller needs one row per corner and decides itself (clip_near,
+    # box_from_corners). A depth of exactly 0 would divide to inf, so use a
+    # tiny value instead; those uv rows are never used.
     safe_z = np.where(np.abs(z) < 1e-9, 1e-9, z)
     projected = np.asarray(K) @ in_optical
     uv = (projected[:2, :] / safe_z).T                               # N x 2
@@ -142,8 +143,9 @@ def box_from_corners(uv: np.ndarray, z: np.ndarray, width: int, height: int):
     clipped to the image, or None.
 
     None when: any point is nearer than Z_NEAR (its uv is meaningless;
-    allow 1e-6 m for rounding, since clip_near puts points exactly on it), the box lies entirely outside the image, or the
-    clipped box is narrower or shorter than MIN_BOX_PX.
+    allow 1e-6 m for rounding, since clip_near puts points exactly on it),
+    the box lies entirely outside the image, or the clipped box is narrower
+    or shorter than MIN_BOX_PX.
     """
     if len(z) == 0 or np.any(np.asarray(z) < Z_NEAR - 1e-6):
         return None
