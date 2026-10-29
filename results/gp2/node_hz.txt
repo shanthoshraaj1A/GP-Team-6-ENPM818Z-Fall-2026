@@ -1,0 +1,39 @@
+== yolo (yolov8s.pt), night drive replayed at 20 Hz
+WARNING: topic [/perception/detections] does not appear to be published yet
+average rate: 20.015
+	min: 0.047s max: 0.053s std dev: 0.00172s window: 21
+average rate: 20.022
+	min: 0.047s max: 0.055s std dev: 0.00177s window: 42
+average rate: 19.984
+	min: 0.029s max: 0.075s std dev: 0.00521s window: 62
+average rate: 19.998
+	min: 0.029s max: 0.075s std dev: 0.00494s window: 83
+average rate: 20.016
+	min: 0.029s max: 0.075s std dev: 0.00457s window: 104
+average rate: 20.015
+	min: 0.029s max: 0.075s std dev: 0.00481s window: 125
+average rate: 20.000
+	min: 0.029s max: 0.075s std dev: 0.00510s window: 145
+average rate: 20.008
+	min: 0.029s max: 0.075s std dev: 0.00487s window: 166
+
+== detr (rtdetr-l.pt), night drive replayed at 20 Hz
+average rate: 25.860
+	min: 0.038s max: 0.039s std dev: 0.00025s window: 27
+average rate: 23.713
+	min: 0.038s max: 0.066s std dev: 0.00595s window: 49
+average rate: 22.500
+	min: 0.038s max: 0.066s std dev: 0.00679s window: 69
+average rate: 21.865
+	min: 0.038s max: 0.066s std dev: 0.00640s window: 90
+average rate: 21.486
+	min: 0.038s max: 0.066s std dev: 0.00602s window: 111
+average rate: 21.244
+	min: 0.038s max: 0.066s std dev: 0.00569s window: 131
+average rate: 21.064
+	min: 0.038s max: 0.066s std dev: 0.00538s window: 152
+average rate: 20.933
+	min: 0.038s max: 0.066s std dev: 0.00514s window: 172
+average rate: 20.829
+	min: 0.038s max: 0.066s std dev: 0.00490s window: 193
+
