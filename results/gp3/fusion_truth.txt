@@ -1,0 +1,10 @@
+$ python3 -m tools.fusion_eval --bag ~/gp3_data/run_truth --rig config/carla_config.yaml --drive ~/gp3_data/drive
+frames: 1787, match radius 3.0 m
+vehicle: matched 1406 of 4529 (31.0%), false 328, mean error 1.24 m
+    0-20 m: 1199 of 1885, mean error 1.18 m
+    20-40 m: 207 of 2273, mean error 1.55 m
+    40-80 m: 0 of 371, mean error nan m
+pedestrian: matched 255 of 631 (40.4%), false 13, mean error 0.57 m
+    0-20 m: 242 of 333, mean error 0.56 m
+    20-40 m: 13 of 298, mean error 0.75 m
+    40-80 m: 0 of 0, mean error nan m
