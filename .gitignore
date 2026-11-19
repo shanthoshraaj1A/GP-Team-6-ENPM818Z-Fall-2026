@@ -58,3 +58,6 @@ CATKIN_IGNORE
 # GP2: team drives and model weights (never commit)
 recordings/
 *.pt
+
+# GP3: drives and run bags (never commit)
+gp3_data/

@@ -37,6 +37,19 @@ sensor_manager:
     autopilot: false                            # true for the Task 3 drive
     traffic_manager_port: 8000
 
+    # --- GP3: ground truth, traffic and the length of the drive ----------
+    # record_gp3_launch.py turns on autopilot, ground_truth and
+    # ignore_lights and sets max_sim_s to its duration, so they stay off
+    # here. The traffic is the GP3 drive's: 80 vehicles and 150 walkers
+    # with seed 818. Set both counts to 0 for an empty town.
+    ground_truth: false
+    ignore_lights: false
+    max_sim_s: 0.0                              # 0 = run until Ctrl+C
+    traffic:
+      vehicles: 80
+      walkers: 150
+      seed: 818
+
     # --- Mount transforms, metres and degrees -----------------------------
     # These feed both the CARLA spawn and the static TF tree, so the two
     # cannot disagree. Each key is that sensor's TF child frame, under the
@@ -79,9 +92,12 @@ sensor_manager:
         roll: 0.0
         pitch: 0.0
         yaw: 0.0
+      # GP3, rig A's antenna: 1.22 m behind the origin and 0.72 m to the
+      # RIGHT. The GP3 table gives y = -0.72 with y to the left; CARLA's y
+      # points right, so the sign flips here.
       gnss_link:
-        x: 0.0
-        y: 0.0
+        x: -1.22
+        y: 0.72
         z: 2.8
         roll: 0.0
         pitch: 0.0

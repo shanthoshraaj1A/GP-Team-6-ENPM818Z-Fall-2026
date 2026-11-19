@@ -34,7 +34,23 @@ from l2_carla_demo.conversions import (
     transform_from_carla,
 )
 
+# GP3: the traffic around the car, and the ground truth that grades GP3.
+from ads_pipeline import traffic
+from ads_pipeline.ground_truth import GroundTruth
+
 EGO_FRAME = 'ego_vehicle'
+
+
+def time_is_up(sim_now, sim_start, max_sim_s):
+    """GP3: True once max_sim_s seconds of simulated time have passed since
+    sim_start. A max_sim_s of 0 means no limit: the node runs until Ctrl+C.
+
+    The simulated clock is a sum of 0.05 s steps, so it can sit a hair under
+    the limit after the last step; the small margin keeps the drive from
+    running one tick long.
+    """
+    return max_sim_s > 0.0 and sim_now - sim_start >= max_sim_s - 1e-6
+
 
 class SensorManager(Node):
 
@@ -119,6 +135,15 @@ class SensorManager(Node):
             for axis in ('x', 'y', 'z', 'roll', 'pitch', 'yaw'):
                 self.declare_parameter(f'mounts.{mount}.{axis}', 0.0)
 
+        # Declare GP3 parameters: ground truth, traffic, and a drive that
+        # ends by itself after max_sim_s seconds of simulated time
+        self.declare_parameter('ground_truth', False)
+        self.declare_parameter('ignore_lights', False)
+        self.declare_parameter('max_sim_s', 0.0)
+        self.declare_parameter('traffic.vehicles', 0)
+        self.declare_parameter('traffic.walkers', 0)
+        self.declare_parameter('traffic.seed', 818)
+
         # CARLA connection parameters
         self.host = self.get_parameter("host").value
         self.port = self.get_parameter("port").value
@@ -199,9 +224,20 @@ class SensorManager(Node):
         self.imu_link_roll = self.get_parameter("mounts.imu_link.roll").value
         self.imu_link_pitch = self.get_parameter("mounts.imu_link.pitch").value
         self.imu_link_yaw = self.get_parameter("mounts.imu_link.yaw").value
-        
+
+        # GP3 Parameters
+        self.ground_truth = self.get_parameter("ground_truth").value
+        self.ignore_lights = self.get_parameter("ignore_lights").value
+        self.max_sim_s = self.get_parameter("max_sim_s").value
+        self.traffic_vehicles = self.get_parameter("traffic.vehicles").value
+        self.traffic_walkers = self.get_parameter("traffic.walkers").value
+        self.traffic_seed = self.get_parameter("traffic.seed").value
+
         self.actors = []
         self.world = None
+        # GP3: the ground-truth publisher, made in _setup when ground_truth
+        # is true; _tick publishes with it after every tick.
+        self.gt = None
         # The server settings as we found them. destroy() restores these, so
         # keep the original around from the moment you change anything.
         self._original_settings = None
@@ -279,8 +315,39 @@ class SensorManager(Node):
             self.vehicle.set_autopilot(True, tm_port)
             self.get_logger().info('Autopilot enabled.')
 
+        # GP3: the car's true pose and the true boxes around it. They need
+        # the vehicle, so this comes after the spawn.
+        if self.ground_truth:
+            self.gt = GroundTruth(self, self.world, self.vehicle)
+            self.get_logger().info('Ground truth enabled.')
+
+        # GP3: traffic. spawn() returns every actor it made, the walkers'
+        # controllers included, so destroy() removes them with the rest.
+        # exclude_index keeps the other cars off our own spawn point.
+        if self.traffic_vehicles > 0 or self.traffic_walkers > 0:
+            tm_port = self.get_parameter('traffic_manager_port').value
+            traffic_actors = traffic.spawn(
+                self.client, self.world, tm_port, self.traffic_vehicles,
+                self.traffic_walkers, self.traffic_seed,
+                exclude_index=self.spawn_index)
+            self.actors.extend(traffic_actors)
+            # spawn() made the Traffic Manager synchronous. Keep the handle,
+            # so destroy() hands it back even when autopilot is off.
+            self.traffic_manager = self.client.get_trafficmanager(tm_port)
+            self.get_logger().info(
+                f'Spawned {len(traffic_actors)} traffic actors '
+                f'(seed {self.traffic_seed}).')
+
+        # GP3: a car that waits at a red light for half the drive gives the
+        # EKF and the tracker little to do.
+        if self.ignore_lights and self.autopilot:
+            self.traffic_manager.ignore_lights_percentage(self.vehicle, 100.0)
+            self.get_logger().info('Ego ignores traffic lights.')
+
         if self.get_parameter('synchronous_mode').value:
             dt = self.get_parameter('fixed_delta_seconds').value
+            # GP3: max_sim_s counts from here (see _tick).
+            self.sim_start = self.world.get_snapshot().timestamp.elapsed_seconds
             self.timer = self.create_timer(dt, self._tick)
 
     # Taken from the Task 2 code block
@@ -506,6 +573,20 @@ class SensorManager(Node):
     def _tick(self):
         """Advance the simulation by one step. Synchronous mode only."""
         self.world.tick()
+        sim_now = self.world.get_snapshot().timestamp.elapsed_seconds
+
+        # GP3: publish the truth right after the tick, with the tick's time,
+        # so it carries the same stamp as the sensor data of this tick.
+        if self.gt is not None:
+            self.gt.publish(sim_now)
+
+        # GP3: after max_sim_s of simulated time, stop ticking and shut the
+        # node down, so a recording of the drive ends by itself.
+        if time_is_up(sim_now, self.sim_start, self.max_sim_s):
+            self.get_logger().info(
+                f'{self.max_sim_s:.1f} s of simulated time done; shutting down.')
+            self.timer.cancel()
+            rclpy.try_shutdown()
 
     # ----------------------------------------------------------------------
     def destroy(self):
@@ -515,6 +596,10 @@ class SensorManager(Node):
         for actor in reversed(self.actors):
             try:
                 if isinstance(actor, carla.Sensor) and actor.is_listening:
+                    actor.stop()
+                # GP3: a walker's AI controller has to be stopped before it
+                # is destroyed.
+                if actor.type_id == 'controller.ai.walker':
                     actor.stop()
             except RuntimeError:
                 pass
