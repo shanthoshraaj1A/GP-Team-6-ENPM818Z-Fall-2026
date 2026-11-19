@@ -79,9 +79,9 @@ sensor_manager:
         pitch: -6.6
         yaw: 0.0
       lidar_top:
-        x: 0.34
+        x: 0.0
         y: 0.0
-        z: 2.78
+        z: 2.8
         roll: 0.0
         pitch: 0.0
         yaw: 0.0
