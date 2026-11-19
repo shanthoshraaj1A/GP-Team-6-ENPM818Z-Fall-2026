@@ -1,0 +1,21 @@
+$ python3 error_budget.py --truth ~/gp3_data/run_truth --ekf ~/gp3_data/run_ekf --rig config/carla_config.yaml --drive ~/gp3_data/drive --outage 35.2 58.3
+(error_budget.py: scores both Task 3 runs with tools.fusion_eval's own functions, split by time; outage counted from the first GNSS fix as tools.ape does)
+outage 35.2-58.3 s after the first GNSS fix; settle 3 s; EKF first pose 1.70 s after the first fix; match radius 3.0 m
+
+EKF position error (run_ekf, /localization/pose vs /ground_truth/ego):
+  with GNSS : 1246 poses, mean 0.37 m, RMSE 0.45 m, max 2.22 m
+  outage    :  462 poses, mean 12.77 m, RMSE 17.37 m, max 43.73 m
+  settle    :   60 poses, mean 1.80 m, RMSE 8.05 m, max 44.17 m
+
+vehicle:
+  before EKF | true pose:   20 frames, matched   16 of   16 (100.0%), false   4, mean error 0.83 m | EKF pose:   32 frames, matched    0 of   28 (  0.0%), false   0, mean error nan m
+  with GNSS  | true pose: 1245 frames, matched  867 of 2771 ( 31.3%), false 287, mean error 1.27 m | EKF pose: 1245 frames, matched  850 of 2771 ( 30.7%), false 304, mean error 1.30 m
+  outage     | true pose:  462 frames, matched  455 of 1529 ( 29.8%), false  30, mean error 1.20 m | EKF pose:  462 frames, matched   89 of 1529 (  5.8%), false 396, mean error 1.72 m
+  settle     | true pose:   60 frames, matched   68 of  213 ( 31.9%), false   7, mean error 1.09 m | EKF pose:   60 frames, matched   66 of  213 ( 31.0%), false   9, mean error 1.07 m
+
+pedestrian:
+  before EKF | true pose:   20 frames, matched    0 of   20 (  0.0%), false   0, mean error nan m | EKF pose:   32 frames, matched    0 of   32 (  0.0%), false   0, mean error nan m
+  with GNSS  | true pose: 1245 frames, matched  150 of  378 ( 39.7%), false   7, mean error 0.33 m | EKF pose: 1245 frames, matched  150 of  378 ( 39.7%), false   7, mean error 0.68 m
+  outage     | true pose:  462 frames, matched  105 of  233 ( 45.1%), false   6, mean error 0.92 m | EKF pose:  462 frames, matched   47 of  233 ( 20.2%), false  64, mean error 2.21 m
+  settle     | true pose:   60 frames, matched    0 of    0 (  nan%), false   0, mean error nan m | EKF pose:   60 frames, matched    0 of    0 (  nan%), false   0, mean error nan m
+
