@@ -1,0 +1,10 @@
+$ python3 outage_plot.py --bag ~/gp3_data/run_ekf --outage 35.2 58.3   (same run as ape.txt; 1-sigma = sqrt(Pxx + Pyy) from /localization/odom; plot in outage.png, data in outage.csv)
+outage 35.2-58.3 s after the first GNSS fix (670 fixes used; none from 35.2 s to 58.4 s)
+just before the outage (35.15 s): error 0.14 m, 1-sigma 0.45 m, EKF speed 4.37 m/s, true speed 4.12 m/s
+end of the outage (58.25 s): error 43.73 m, 1-sigma 86.44 m, EKF speed 4.45 m/s, true speed 0.00 m/s
+max error in the outage 43.73 m at 58.25 s
+max error before the final stop 11.68 m at 44.50 s
+EKF speed in the outage: 4.45 to 4.45 m/s; true speed: 0.00 to 8.21 m/s, mean 2.31
+car standing (true speed < 0.1 m/s) for good from 47.60 s to the end of the outage (10.65 s); at the EKF speed 4.45 m/s that is 47.4 m driven on paper; error at the stop 6.61 m
+error inside 1-sigma: 100.0% in the outage, 65.7% outside; inside 3-sigma: 100.0% in the outage
+3 s after the outage (61.30 s): error 0.21 m, 1-sigma 0.39 m

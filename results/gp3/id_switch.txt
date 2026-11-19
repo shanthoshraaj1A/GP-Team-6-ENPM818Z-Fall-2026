@@ -1,0 +1,114 @@
+$ python3 id_switches.py --bag ~/gp3_data/run_truth --rig config/carla_config.yaml --drive ~/gp3_data/drive --obj 228 --at 23.65 --window -2.4 0.3
+(same frames and 3 m matching as tools/track_eval.py; lists each ID switch; times are s after the first GNSS fix)
+ID switches: 42 (26 after the object went unmatched longer than 0.25 s = 5 frames, the tracker deletes a track after 5 misses; 16 within 0.25 s)
+time_s  object  class       old_track -> new_track  gap_s  range_m  old_track_still_published
+  5.10     331  pedestrian          2 -> 5           0.80     12.9  False
+  7.05     248  vehicle             6 -> 12          0.05      6.3  False
+  7.40     221  vehicle            10 -> 12          1.50      9.6  False
+  7.55     221  vehicle            12 -> 13          0.10      8.5  False
+ 11.30     233  vehicle            14 -> 15          0.30     25.0  False
+ 21.00     228  vehicle            21 -> 22          0.80     15.9  False
+ 23.65     228  vehicle            22 -> 25          2.00      5.9  False
+ 34.90     228  vehicle            25 -> 28          3.30     10.6  False
+ 35.85     228  vehicle            28 -> 30          0.95     10.5  False
+ 36.95     321  pedestrian         31 -> 33          0.45     13.4  False
+ 37.80     228  vehicle            30 -> 34          1.50      9.5  False
+ 41.05     228  vehicle            34 -> 44          2.10     21.9  False
+ 41.35     227  vehicle             4 -> 44         35.95     19.5  False
+ 41.60     228  vehicle            44 -> 46          0.30     23.4  False
+ 42.00     227  vehicle            44 -> 47          0.10     16.3  False
+ 42.90     228  vehicle            46 -> 48          0.70     22.5  False
+ 44.25     228  vehicle            48 -> 51          0.05     14.3  False
+ 44.35     228  vehicle            51 -> 48          0.05     13.6  True
+ 44.45     228  vehicle            48 -> 51          0.05     13.0  False
+ 47.30     228  vehicle            51 -> 55          1.45      6.0  False
+ 66.80     248  vehicle            12 -> 59         59.75     11.6  False
+ 68.95     221  vehicle            13 -> 62         61.05     13.5  False
+ 69.85     221  vehicle            62 -> 64          0.80      7.7  False
+ 72.50     237  vehicle            65 -> 68          0.60      9.2  False
+ 73.25     237  vehicle            68 -> 70          0.75      6.6  False
+ 76.40     228  vehicle            55 -> 75          0.05      6.4  False
+ 76.85     245  vehicle            73 -> 75          0.05      9.7  True
+ 77.00     245  vehicle            75 -> 73          0.05      9.2  False
+ 77.05     245  vehicle            73 -> 75          0.05      9.0  True
+ 77.15     245  vehicle            75 -> 73          0.05      8.6  False
+ 77.20     245  vehicle            73 -> 75          0.05      8.3  True
+ 77.25     245  vehicle            75 -> 73          0.05      8.1  False
+ 77.30     228  vehicle            75 -> 76          0.50      9.6  False
+ 78.05     228  vehicle            76 -> 77          0.40     11.0  False
+ 81.95     230  vehicle            78 -> 80          1.10     25.6  False
+ 82.60     233  vehicle            15 -> 81         70.70     19.1  False
+ 82.90     233  vehicle            81 -> 82          0.10     17.3  False
+ 82.95     233  vehicle            82 -> 81          0.05     17.0  False
+ 83.00     233  vehicle            81 -> 82          0.05     16.6  False
+ 83.95     214  vehicle            26 -> 86         57.05     14.9  False
+ 84.30     259  vehicle            85 -> 87          0.70     34.0  False
+ 84.90     214  vehicle            86 -> 88          0.75      7.8  False
+
+timeline of object 228 (time, range from ego, nearest fused object of its class, nearest tracks (dist, id), 2D detections in frame):
+   21.25   14.0 m  fused   1.1 m  tracks [1.2 m #22, 14.8 m #20]  boxes 3
+   21.30   13.7 m  fused   1.2 m  tracks [1.2 m #22, 11.9 m #23]  boxes 3
+   21.35   13.4 m  fused   1.2 m  tracks [1.2 m #22, 11.5 m #23]  boxes 3
+   21.40   13.1 m  fused   1.2 m  tracks [1.2 m #22, 11.2 m #23]  boxes 4
+   21.45   12.8 m  fused   1.2 m  tracks [1.2 m #22, 14.8 m #20]  boxes 3
+   21.50   12.5 m  fused  10.5 m  tracks [10.5 m #24]  boxes 1
+   21.55   12.3 m  fused  12.9 m  tracks [14.6 m #20]  boxes 1
+   21.60   12.1 m  fused  10.6 m  tracks [10.5 m #24]  boxes 1
+   21.65   12.0 m  fused   1.2 m  tracks [1.2 m #22, 10.5 m #24]  boxes 2
+   21.70   11.9 m  fused  10.7 m  tracks [10.6 m #24]  boxes 1
+   21.75   11.8 m  fused  10.7 m  tracks [10.6 m #24]  boxes 1
+   21.80   11.7 m  fused  10.7 m  tracks [10.7 m #24]  boxes 1
+   21.85   11.6 m  fused  10.6 m  tracks [10.6 m #24]  boxes 1
+   21.90   11.5 m  fused  10.6 m  tracks [10.6 m #24]  boxes 1
+   21.95   11.3 m  fused  10.7 m  tracks [10.7 m #24]  boxes 1
+   22.00   11.2 m  fused  10.7 m  tracks [10.7 m #24]  boxes 1
+   22.05   11.1 m  fused  13.0 m  tracks [11.2 m #24]  boxes 1
+   22.10   10.9 m  fused  13.0 m  tracks [11.6 m #24]  boxes 1
+   22.15   10.8 m  fused  13.0 m  tracks [12.0 m #24]  boxes 1
+   22.20   10.6 m  fused  13.0 m  tracks [12.3 m #24]  boxes 1
+   22.25   10.5 m  fused  13.0 m  tracks [12.6 m #24]  boxes 1
+   22.30   10.3 m  fused  13.0 m  tracks [12.8 m #24]  boxes 1
+   22.35   10.1 m  fused  12.9 m  tracks [13.0 m #24]  boxes 1
+   22.40   10.0 m  fused  12.9 m  tracks [13.1 m #24]  boxes 1
+   22.45    9.8 m  fused   nan m  tracks [none]  boxes 1
+   22.50    9.6 m  fused  13.0 m  tracks [13.4 m #24]  boxes 1
+   22.55    9.5 m  fused   nan m  tracks [none]  boxes 1
+   22.60    9.3 m  fused   nan m  tracks [none]  boxes 1
+   22.65    9.1 m  fused   nan m  tracks [none]  boxes 0
+   22.70    9.0 m  fused   nan m  tracks [none]  boxes 0
+   22.75    8.8 m  fused   nan m  tracks [none]  boxes 0
+   22.80    8.7 m  fused   nan m  tracks [none]  boxes 0
+   22.85    8.5 m  fused   nan m  tracks [none]  boxes 0
+   22.90    8.3 m  fused   nan m  tracks [none]  boxes 0
+   22.95    8.2 m  fused   nan m  tracks [none]  boxes 0
+   23.00    8.0 m  fused   nan m  tracks [none]  boxes 0
+   23.05    7.8 m  fused   nan m  tracks [none]  boxes 0
+   23.10    7.7 m  fused   nan m  tracks [none]  boxes 0
+   23.15    7.5 m  fused   nan m  tracks [none]  boxes 0
+   23.20    7.3 m  fused   nan m  tracks [none]  boxes 0
+   23.25    7.2 m  fused   nan m  tracks [none]  boxes 0
+   23.30    7.0 m  fused   nan m  tracks [none]  boxes 0
+   23.35    6.8 m  fused   nan m  tracks [none]  boxes 0
+   23.40    6.7 m  fused   nan m  tracks [none]  boxes 0
+   23.45    6.5 m  fused   nan m  tracks [none]  boxes 0
+   23.50    6.3 m  fused   1.2 m  tracks [none]  boxes 1
+   23.55    6.2 m  fused   nan m  tracks [none]  boxes 0
+   23.60    6.0 m  fused   1.2 m  tracks [none]  boxes 1
+   23.65    5.9 m  fused   1.2 m  tracks [1.2 m #25]  boxes 1
+   23.70    5.7 m  fused   1.1 m  tracks [1.2 m #25]  boxes 1
+   23.75    5.6 m  fused   nan m  tracks [none]  boxes 0
+   23.80    5.5 m  fused   1.2 m  tracks [1.2 m #25]  boxes 1
+   23.85    5.5 m  fused   1.2 m  tracks [1.2 m #25]  boxes 1
+   23.90    5.5 m  fused   1.2 m  tracks [1.2 m #25]  boxes 1
+
+$ python3 why_missed.py 21.45 21.50 22.00 22.40 22.80 23.20 23.50 23.65
+(YOLOv8s from GP2 detector_core on the drive frames, conf 0.01, boxes in the lane ahead; the detector node publishes only scores >= 0.50)
+GP2 classes kept: [('bus', 'vehicle'), ('car', 'vehicle'), ('person', 'pedestrian'), ('truck', 'vehicle')]
+21.45 s: truck 0.62 [582, 293, 673, 379]; person 0.23 [657, 275, 680, 336]; car 0.08 [582, 293, 672, 378]; person 0.03 [666, 275, 681, 297]
+21.50 s: truck 0.49 [581, 292, 674, 381]; person 0.27 [657, 274, 680, 336]; car 0.17 [580, 292, 672, 380]; person 0.04 [590, 248, 615, 294]
+22.00 s: truck 0.43 [572, 291, 675, 393]; person 0.27 [659, 273, 681, 340]; person 0.10 [658, 273, 682, 370]; person 0.05 [667, 274, 682, 304]
+22.40 s: truck 0.46 [561, 290, 684, 407]; person 0.04 [675, 274, 685, 296]; car 0.03 [440, 307, 468, 333]; person 0.02 [662, 272, 686, 397]
+22.80 s: skateboard 0.24 [545, 285, 692, 428]; truck 0.16 [546, 284, 691, 428]; person 0.12 [676, 270, 687, 296]; person 0.06 [589, 248, 613, 284]
+23.20 s: traffic light 0.38 [518, 279, 705, 461]; car 0.31 [440, 304, 502, 335]; car 0.10 [427, 298, 503, 336]; truck 0.09 [427, 301, 505, 337]
+23.50 s: truck 0.60 [482, 271, 726, 501]; truck 0.13 [439, 260, 515, 339]; suitcase 0.12 [501, 269, 704, 465]; person 0.06 [533, 238, 580, 274]
+23.65 s: truck 0.58 [455, 265, 740, 531]; truck 0.16 [434, 283, 495, 339]; traffic light 0.04 [459, 265, 715, 522]; person 0.02 [596, 246, 612, 266]

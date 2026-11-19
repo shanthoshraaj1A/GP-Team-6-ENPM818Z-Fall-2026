@@ -1,0 +1,22 @@
+$ python3 q_tuning.py   (offline replay of the drive through LocalizationNode callbacks; scratch script, scores with tools/ape.py functions)
+R from the GP1 YAML: GNSS noise 0.000005 deg x 111,275.5 m/deg = 0.556 m std -> R = 0.31 m^2
+R on this drive: 900 fixes, fix minus true antenna: mean (0.014, 0.036) m, variance x 0.294, y 0.320 m^2
+
+offline replay of the drive (ekf_replay.py), outage 35.2-58.3 s, scored with tools/ape.py functions
+columns: APE with GNSS / APE outage / NIS verdict, mean, % inside [0.051, 7.378] / speed RMSE / heading RMSE
+starter config as shipped (antenna 0/0, R 1.0)   q=[0.01, 0.01, 0.001, 0.1] r=1.0 antenna=(0.0, 0.0)
+    APE all 5.894  with GNSS 1.765  outage 11.089 (max 18.38)  NIS consistent mean 1.59 inside 93.7%  v_rmse 1.68  th_rmse 6.12 deg
+starter Q (q_xy 0.01, q_theta 0.001, q_v 0.1)    q=[0.01, 0.01, 0.001, 0.1] r=0.31 antenna=(-1.22, -0.72)
+    APE all 5.994  with GNSS 0.684  outage 11.517 (max 28.80)  NIS consistent mean 3.16 inside 88.4%  v_rmse 1.44  th_rmse 4.69 deg
+q_v 0.3                                          q=[0.01, 0.01, 0.001, 0.3] r=0.31 antenna=(-1.22, -0.72)
+    APE all 7.677  with GNSS 0.514  outage 14.791 (max 37.35)  NIS consistent mean 2.45 inside 93.0%  v_rmse 1.22  th_rmse 4.16 deg
+q_v 1.0                                          q=[0.01, 0.01, 0.001, 1.0] r=0.31 antenna=(-1.22, -0.72)
+    APE all 8.586  with GNSS 0.431  outage 16.561 (max 41.33)  NIS consistent mean 2.10 inside 95.9%  v_rmse 1.05  th_rmse 4.27 deg
+q_v 2.0                                          q=[0.01, 0.01, 0.001, 2.0] r=0.31 antenna=(-1.22, -0.72)
+    APE all 8.900  with GNSS 0.417  outage 17.170 (max 42.69)  NIS consistent mean 2.00 inside 95.6%  v_rmse 1.00  th_rmse 4.37 deg
+q_v 4.0                                          q=[0.01, 0.01, 0.001, 4.0] r=0.31 antenna=(-1.22, -0.72)
+    APE all 9.342  with GNSS 0.419  outage 18.026 (max 44.51)  NIS consistent mean 1.94 inside 95.9%  v_rmse 1.01  th_rmse 4.49 deg
+q_v 2.0, q_theta 0.01                            q=[0.01, 0.01, 0.01, 2.0] r=0.31 antenna=(-1.22, -0.72)
+    APE all 8.725  with GNSS 0.461  outage 16.836 (max 41.25)  NIS consistent mean 1.95 inside 95.4%  v_rmse 1.00  th_rmse 9.01 deg
+CHOSEN: q_v 2.0, q_theta 0.0001                  q=[0.01, 0.01, 0.0001, 2.0] r=0.31 antenna=(-1.22, -0.72)
+    APE all 9.009  with GNSS 0.421  outage 17.374 (max 43.73)  NIS consistent mean 2.06 inside 94.8%  v_rmse 1.02  th_rmse 3.82 deg
