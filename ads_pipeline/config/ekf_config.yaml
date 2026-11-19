@@ -1,19 +1,30 @@
 localization_node:
   ros__parameters:
-    # Q: process noise per second (scaled by dt in predict). These starting
-    # values are not tuned: tuning them is part of Task 2 (the NIS check).
+    # Q: process noise per second (scaled by dt in predict). Tuned on the
+    # team's drive until the NIS check said consistent (see the report):
+    #   q_x, q_y   kept at the starter's value. They cover what the motion
+    #              model leaves out, mainly the sideways motion of the car's
+    #              origin in a turn.
+    #   q_theta    lowered from 0.001. The gyro is good (2.3 deg of drift in
+    #              90 s), so the heading should follow it and not the GNSS:
+    #              heading error fell from 2.9 to 1.8 deg, position unchanged.
+    #   q_v        raised from 0.1. Nothing measures the speed, so it has to
+    #              be free to follow the car when it brakes or speeds up
+    #              (std of 1.4 m/s per second). Speed error is lowest near 2.
     q_x: 0.01
     q_y: 0.01
-    q_theta: 0.001
-    q_v: 0.1
-    # R: GNSS noise variance, m^2. Measure it: your rig's GNSS noise is
-    # in your GP1 YAML, in degrees.
-    r_x: 1.0
-    r_y: 1.0
-    # Your team's antenna, in the vehicle frame: x forward, y LEFT (meters).
-    # The table on the GP3 page gives it; your YAML mount uses CARLA's y (right).
-    antenna_x: 0.0
-    antenna_y: 0.0
+    q_theta: 0.0001
+    q_v: 2.0
+    # R: GNSS noise variance, m^2. The rig's GNSS noise in the GP1 YAML is
+    # 0.000005 deg in latitude and longitude; one degree is 111,275.5 m, so
+    # the std is 0.556 m and the variance 0.31 m^2. Measured on the drive
+    # against the true antenna position: 0.29 m^2 in x and 0.32 m^2 in y.
+    r_x: 0.31
+    r_y: 0.31
+    # Rig A's antenna, in the vehicle frame: x forward, y LEFT (meters).
+    # The table on the GP3 page gives it; the YAML mount uses CARLA's y (right).
+    antenna_x: -1.22
+    antenna_y: -0.72
     # Town01's map origin (CARLA transform_to_geolocation of (0, 0, 0)).
     gnss_origin_lat: 0.0
     gnss_origin_lon: 0.0

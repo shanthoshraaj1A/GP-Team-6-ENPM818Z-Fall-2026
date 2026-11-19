@@ -1,0 +1,6 @@
+$ python3 -m tools.ape --bag ~/gp3_data/run_ekf --outage 35.2 58.3 --nis ../results/gp3/nis.csv --csv ../results/gp3/ape.csv
+pairs: 1768
+APE RMSE all: 9.013 m
+APE RMSE outage: 17.374 m
+APE RMSE with GNSS (outside the outage and the 3 s after it): 0.452 m
+NIS: consistent, mean 2.06 (an honest filter averages 2), 94.8% inside [0.051, 7.378]
