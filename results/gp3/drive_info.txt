@@ -1,0 +1,18 @@
+$ ros2 bag info ~/gp3_data/drive
+
+Files:             practice_A_0.mcap
+Bag size:          6.5 GiB
+Storage id:        mcap
+Duration:          120.442554889s
+Start:             Nov  2 2026 03:34:54.096863563 (1793590494.096863563)
+End:               Nov  2 2026 03:36:54.539418452 (1793590614.539418452)
+Messages:          11704
+Topic information: Topic: /carla/camera/rgb/image | Type: sensor_msgs/msg/Image | Count: 1800 | Serialization Format: cdr
+                   Topic: /carla/gnss/fix | Type: sensor_msgs/msg/NavSatFix | Count: 901 | Serialization Format: cdr
+                   Topic: /carla/imu/data | Type: sensor_msgs/msg/Imu | Count: 1801 | Serialization Format: cdr
+                   Topic: /carla/lidar/points | Type: sensor_msgs/msg/PointCloud2 | Count: 1801 | Serialization Format: cdr
+                   Topic: /ground_truth/ego | Type: nav_msgs/msg/Odometry | Count: 1800 | Serialization Format: cdr
+                   Topic: /ground_truth/objects | Type: vision_msgs/msg/Detection3DArray | Count: 1800 | Serialization Format: cdr
+                   Topic: /tf | Type: tf2_msgs/msg/TFMessage | Count: 1800 | Serialization Format: cdr
+                   Topic: /tf_static | Type: tf2_msgs/msg/TFMessage | Count: 1 | Serialization Format: cdr
+

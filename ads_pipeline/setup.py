@@ -35,6 +35,10 @@ setup(
             'gnss_node = ads_pipeline.gnss_node:main',
             'imu_node = ads_pipeline.imu_node:main',
             'detector_node = ads_pipeline.detector_node:main',
+            'gnss_outage = ads_pipeline.gnss_outage:main',
+            'localization_node = ads_pipeline.localization_node:main',
+            'fusion_node = ads_pipeline.fusion_node:main',
+            'tracker_node = ads_pipeline.tracker_node:main',
         ],
     },
 )

@@ -1,0 +1,149 @@
+$ ros2 bag play ~/gp3_data/drive        (running in another terminal)
+
+$ ros2 topic hz /carla/gnss/fix
+average rate: 7.089
+	min: 0.132s max: 0.156s std dev: 0.00827s window: 9
+average rate: 6.859
+	min: 0.104s max: 0.265s std dev: 0.03471s window: 16
+average rate: 7.675
+	min: 0.088s max: 0.265s std dev: 0.03489s window: 26
+average rate: 8.246
+	min: 0.088s max: 0.265s std dev: 0.03244s window: 37
+average rate: 8.559
+	min: 0.088s max: 0.265s std dev: 0.03004s window: 47
+average rate: 8.806
+	min: 0.088s max: 0.265s std dev: 0.02790s window: 58
+average rate: 8.977
+	min: 0.088s max: 0.265s std dev: 0.02607s window: 69
+average rate: 9.105
+	min: 0.088s max: 0.265s std dev: 0.02454s window: 80
+average rate: 9.206
+	min: 0.088s max: 0.265s std dev: 0.02325s window: 91
+average rate: 9.277
+	min: 0.088s max: 0.265s std dev: 0.02224s window: 101
+
+$ ros2 topic hz /carla/imu/data
+average rate: 20.623
+	min: 0.031s max: 0.061s std dev: 0.00584s window: 22
+average rate: 20.306
+	min: 0.031s max: 0.061s std dev: 0.00478s window: 43
+average rate: 20.231
+	min: 0.031s max: 0.061s std dev: 0.00408s window: 64
+average rate: 20.168
+	min: 0.031s max: 0.061s std dev: 0.00362s window: 84
+average rate: 20.116
+	min: 0.031s max: 0.061s std dev: 0.00343s window: 105
+average rate: 20.114
+	min: 0.031s max: 0.061s std dev: 0.00349s window: 126
+average rate: 20.098
+	min: 0.031s max: 0.061s std dev: 0.00327s window: 147
+average rate: 20.080
+	min: 0.031s max: 0.061s std dev: 0.00327s window: 167
+average rate: 20.078
+	min: 0.031s max: 0.061s std dev: 0.00319s window: 188
+average rate: 20.070
+	min: 0.031s max: 0.061s std dev: 0.00306s window: 209
+
+$ ros2 topic echo --once /ground_truth/ego
+header:
+  stamp:
+    sec: 31
+    nanosec: 838951596
+  frame_id: map
+child_frame_id: ego_vehicle
+pose:
+  pose:
+    position:
+      x: 120.73360443115234
+      y: 2.049879312515259
+      z: 0.03611108660697937
+    orientation:
+      x: 0.0
+      y: 0.0
+      z: 0.9999994837408563
+      w: 0.001016128939057757
+  covariance:
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+twist:
+  twist:
+    linear:
+      x: 6.478259706454992e-09
+      y: -1.2896452794564084e-09
+      z: 0.0
+    angular:
+      x: 0.0
+      y: 0.0
+      z: 0.0
+  covariance:
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+---

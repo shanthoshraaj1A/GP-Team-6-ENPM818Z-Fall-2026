@@ -35,6 +35,9 @@
   <exec_depend>cv_bridge</exec_depend>
   <exec_depend>python3-scipy</exec_depend>
 
+  <!-- GP3: the tracked-object messages tracker_node publishes. -->
+  <exec_depend>ads_msgs</exec_depend>
+
   <test_depend>python3-pytest</test_depend>
 
   <export>
