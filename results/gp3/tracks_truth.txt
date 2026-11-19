@@ -1,0 +1,8 @@
+$ python3 -m tools.track_eval --bag ~/gp3_data/run_truth --rig config/carla_config.yaml --drive ~/gp3_data/drive
+frames: 1787, match radius 3.0 m
+gt: 5160
+matched: 1553
+missed: 3607
+false_tracks: 272
+id_switches: 42
+MOTA: 0.240; mean speed error: 0.88 m/s

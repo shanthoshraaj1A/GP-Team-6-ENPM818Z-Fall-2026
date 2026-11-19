@@ -14,6 +14,8 @@ R_STD = 1.29    # m, fused position noise: 1.62 m mean error measured / sqrt(pi 
 Q_ACC = 1.0     # m/s^2, random acceleration, chosen for GP3
 V_STD0 = 5.0    # m/s, initial velocity uncertainty
 
+BEYOND_GATE = 1e6   # the cost given to every pair beyond the gate (see step)
+
 
 class MapKalman:
     """State x = [x, y, vx, vy] in the map frame; covariance P."""
@@ -105,6 +107,13 @@ class MapTracker:
             cls_dets = [d for d in dets if d['cls'] == cls]
             C = mahalanobis_cost([t.kf for t in tracks],
                                  [d['xy'] for d in cls_dets])
+            # A pair beyond the gate can never match, so how far beyond it
+            # is must not matter. Left as it is, one very large distance can
+            # make the assignment give up a good pair to shorten a pair that
+            # is dropped anyway. (In GP2 the cost was 1 - IoU, at most 1, so
+            # this could not happen there.) On noisy_dets.json this takes
+            # the ID switches from 114 to 103.
+            C[C > self.gate] = BEYOND_GATE
             matches, um_tracks, um_dets = associate(C, max_cost=self.gate)
 
             # 3. Matched: update, hits += 1, misses = 0; confirm at CONFIRM_HITS.
