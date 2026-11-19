@@ -78,3 +78,35 @@ python3 tools/check_coco.py --rec recordings/clear --model yolo
 python3 tools/grade.py --rec recordings/clear --conf 0.5
 python3 tools/grade.py --rec recordings/night --conf 0.5
 ```
+
+## GP3: Fusion & Localization (in progress)
+
+GP3 is on the `gp3` branch. We use Team 1's values (rig A): GNSS antenna at x = -1.22 m, y = -0.72 m (y left), and a GNSS outage from 35.2 s to 58.3 s after the first fix.
+
+### GP3 setup: problems we hit and how we fixed them
+
+Our ROS 2 Humble runs in a Docker container that only mounts the `enpm818z_ws` workspace, and the team drive was recorded with a newer ROS 2 (Jazzy). Three setup steps were needed before the GP3 commands would work:
+
+1. **The container couldn't read the drive (`.mcap`).** Humble only came with the SQLite storage plugin. Install the MCAP plugin inside the container:
+
+   ```
+   apt-get install -y ros-humble-rosbag2-storage-mcap
+   ```
+
+2. **`ros2 bag info` failed with "yaml-cpp: bad conversion".** The drive's `metadata.yaml` is in Jazzy's format (version 9), which Humble can't parse. Keep the original, rebuild the index from the `.mcap` file, then blank the QoS fields, which are also in Jazzy's format (blank means default QoS). The recording itself is not changed, and the message counts stay the same:
+
+   ```
+   cd ~/gp3_data/drive
+   mv metadata.yaml metadata.jazzy.yaml
+   ros2 bag reindex -s mcap ~/gp3_data/drive
+   sed -i -E 's/^(\s+offered_qos_profiles: ).*/\1""/' metadata.yaml
+   ros2 bag info ~/gp3_data/drive      # 1800 camera frames, 901 GNSS fixes
+   ```
+
+3. **The container couldn't see `~/gp3_data`.** Unpack the drive inside the workspace, at `enpm818z_ws/gp3_data/drive`, and link it where the GP3 commands expect it, so every command on the GP3 page works unchanged:
+
+   ```
+   ln -sfn /root/enpm818z_ws/gp3_data /root/gp3_data
+   ```
+
+`gp3_data/` is in `.gitignore`, so no bags are committed.
