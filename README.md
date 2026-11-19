@@ -1,112 +1,25 @@
-# GP---Team-1-ENPM818Z-Fall-2026
+## GP3: Fusion & Localization
 
-## GP2: YOLOv8s vs RT-DETR
-
-For GP2 I compared two camera detectors, YOLOv8s and RT-DETR-L, on Team 1's two CARLA drives (one clear, one at night). Everything for GP2 is on the `gp2` branch, and my report is `gp2_report.pdf` at the top of the repo.
+For GP3 I added localization, camera-LiDAR fusion and tracking on the map to the pipeline, using Team 1's values (rig A): GNSS antenna at x = -1.22 m, y = -0.72 m (y left), and a GNSS outage from 35.2 s to 58.3 s after the first fix. Everything for GP3 is on the `gp3` branch, and my report is `gp3_report.pdf`.
 
 What I added to `ads_pipeline`:
-- Task 1: ground-truth boxes straight from CARLA (`gt_boxes.py`)
-- Task 2: a ROS 2 detector node that publishes on `/perception/detections` (`detector_core.py`, `detector_node.py`)
-- Task 3: code that grades the detectors and gives AP and mAP (`detection_eval.py`)
-- Task 4: an image tracker that follows each object from frame to frame (`box_tracker.py`)
+- Task 1: ground truth after each tick, traffic and a timed stop in `sensor_manager.py`, and the rig A GNSS mount in `carla_config.yaml`
+- Task 2: an EKF that fuses the IMU and the GNSS into the car's pose (`ekf_core.py`, `localization_node.py`, `ekf_config.yaml`)
+- Task 3: camera-LiDAR fusion that puts each detection on the map (`fusion_core.py`)
+- Task 4: a tracker on the map with a Kalman filter and the Mahalanobis gate (`map_tracker.py`)
 
-For each task, the branch history first has a commit with a typical mistake, then a commit that fixes it, so you can see what goes wrong and why.
+As in GP2, each task's history first has a commit with a mistake, then a commit that fixes it: Task 1 the setup problems below, Task 2 the starter's untuned EKF config, Task 3 the LiDAR mount taken from the drive, and Task 4 the tracker without a fixed cost beyond the gate.
 
-## GP2 Breakdown of Work
+## GP3 Breakdown of Work
 
-I did all of GP2 myself: Tasks 1 to 5, including the report.
+I did all of GP3 myself: Tasks 1 to 5, including the report.
 
-## GP2 AI Disclosure
+## GP3 AI Disclosure
 
 ### Shanthosh Raaj Mohanram Mageswari
 
-I used Claude Code to assist with identifying and correcting errors in the code for Tasks 1 to 4, as well as running the build, tests, timing measurements, and grading within my Docker container. Additionally, it helped me create the overlay and node images.
+I used Claude Code throughout Tasks 1 to 4 to help write and debug the code, identify and fix errors, tune the EKF, and set up the Docker environment to run the code and visualize the car in CARLA. It also helped resolve setup issues with the drive, run builds, tests, pipelines, and evaluations inside the Docker container. I reviewed all the changes and executed the Git commands myself.
 
-## GP2 Results
+## GP3 Results
 
-The results and analysis are in `gp2_report.pdf`, and the raw outputs are in `results/gp2/`.
-
-## How to run GP2
-
-Clone the repo into the `src/` folder of your ROS 2 workspace, switch to the `gp2` branch, and install the Python packages that don't come with ROS 2:
-
-```
-git clone git@github.com:shanthoshraaj1A/GP---Team-1-ENPM818Z-Fall-2026.git
-git checkout gp2
-python3 -m pip install --user --break-system-packages ultralytics pycocotools scipy
-```
-
-The drives are too big for GitHub, so they aren't in the repo. Get `team_1_drives.tar` from Canvas and unpack it so you end up with `ads_pipeline/recordings/clear/` and `ads_pipeline/recordings/night/` (600 frames each).
-
-Build from the workspace root, then go into the package folder. All the commands after this are run from `ads_pipeline/`:
-
-```
-colcon build --packages-up-to ads_pipeline
-source install/setup.bash
-cd src/GP---Team-1-ENPM818Z-Fall-2026/ads_pipeline
-python3 -m pytest test/ -k gp2
-```
-
-To draw the ground truth on frames 50, 300 and 550 of each drive (Task 1):
-
-```
-python3 tools/show_frame.py --rec recordings/clear --frames 50 300 550 --out ../results/gp2/overlays
-python3 tools/show_frame.py --rec recordings/night --frames 50 300 550 --out ../results/gp2/overlays
-```
-
-To run both detectors on both drives and time them (Task 2). Close CARLA first, otherwise the times are way off:
-
-```
-python3 tools/run_detector.py --rec recordings/clear --model yolo --weights yolov8s.pt
-python3 tools/run_detector.py --rec recordings/clear --model detr --weights rtdetr-l.pt
-python3 tools/run_detector.py --rec recordings/night --model yolo --weights yolov8s.pt
-python3 tools/run_detector.py --rec recordings/night --model detr --weights rtdetr-l.pt
-```
-
-To run the detector node live, open three terminals. The first starts the node (use `model_type:=yolo weights:=yolov8s.pt` for YOLOv8s), the second plays the night drive as a camera, and the third checks that detections come out at about 20 Hz:
-
-```
-ros2 launch ads_pipeline perception_launch.py model_type:=detr weights:=rtdetr-l.pt
-python3 tools/replay_drive.py --rec recordings/night
-ros2 topic hz /perception/detections
-```
-
-To check my mAP against pycocotools and to grade both drives with the tracker (Tasks 3 and 4). Run `check_coco.py` with `--model yolo` and `--model detr` on both drives:
-
-```
-python3 tools/check_coco.py --rec recordings/clear --model yolo
-python3 tools/grade.py --rec recordings/clear --conf 0.5
-python3 tools/grade.py --rec recordings/night --conf 0.5
-```
-
-## GP3: Fusion & Localization (in progress)
-
-GP3 is on the `gp3` branch. We use Team 1's values (rig A): GNSS antenna at x = -1.22 m, y = -0.72 m (y left), and a GNSS outage from 35.2 s to 58.3 s after the first fix.
-
-### GP3 setup: problems we hit and how we fixed them
-
-Our ROS 2 Humble runs in a Docker container that only mounts the `enpm818z_ws` workspace, and the team drive was recorded with a newer ROS 2 (Jazzy). Three setup steps were needed before the GP3 commands would work:
-
-1. **The container couldn't read the drive (`.mcap`).** Humble only came with the SQLite storage plugin. Install the MCAP plugin inside the container:
-
-   ```
-   apt-get install -y ros-humble-rosbag2-storage-mcap
-   ```
-
-2. **`ros2 bag info` failed with "yaml-cpp: bad conversion".** The drive's `metadata.yaml` is in Jazzy's format (version 9), which Humble can't parse. Keep the original, rebuild the index from the `.mcap` file, then blank the QoS fields, which are also in Jazzy's format (blank means default QoS). The recording itself is not changed, and the message counts stay the same:
-
-   ```
-   cd ~/gp3_data/drive
-   mv metadata.yaml metadata.jazzy.yaml
-   ros2 bag reindex -s mcap ~/gp3_data/drive
-   sed -i -E 's/^(\s+offered_qos_profiles: ).*/\1""/' metadata.yaml
-   ros2 bag info ~/gp3_data/drive      # 1800 camera frames, 901 GNSS fixes
-   ```
-
-3. **The container couldn't see `~/gp3_data`.** Unpack the drive inside the workspace, at `enpm818z_ws/gp3_data/drive`, and link it where the GP3 commands expect it, so every command on the GP3 page works unchanged:
-
-   ```
-   ln -sfn /root/enpm818z_ws/gp3_data /root/gp3_data
-   ```
-
-`gp3_data/` is in `.gitignore`, so no bags are committed.
+The results and analysis are in `gp3_report.pdf`, and the raw outputs are in `results/gp3/`.
